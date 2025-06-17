@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Copy, RotateCcw, User, Bot, Menu } from 'lucide-react';
 
-const DualModelInterface = () => {
+const App = () => {
   // Mock models with different configurations
   const models = {
     'gpt-3.5-turbo': {
@@ -494,4 +494,4 @@ const DualModelInterface = () => {
   );
 };
 
-export default DualModelInterface;
+export default App;
