@@ -223,7 +223,15 @@ const DualModelInterface = () => {
   };
 
   const copyMessage = (content) => {
-    navigator.clipboard.writeText(content);
+    navigator.clipboard.writeText(content).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = content;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    });
   };
 
   const handleKeyDown = (e, side) => {
@@ -246,7 +254,7 @@ const DualModelInterface = () => {
               <User size={16} className="text-white" />
             </div>
           ) : isError ? (
-            <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">
               ⚠️
             </div>
           ) : (
@@ -272,7 +280,7 @@ const DualModelInterface = () => {
           <div className="flex items-center gap-2 mt-2">
             <button
               onClick={() => copyMessage(message.content)}
-              className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+              className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
             >
               <Copy size={12} />
               Copy
@@ -293,14 +301,14 @@ const DualModelInterface = () => {
         {/* Header with Model Selection */}
         <div className="p-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3 flex-1">
+            <div className="flex items-center space-x-3 flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-gray-800 whitespace-nowrap">
                 {side === 'left' ? 'Local Model (Tessa):' : 'Model On-Cloud:'}
               </h3>
               <select
                 value={paneData.selectedModel}
                 onChange={(e) => handleModelChange(side, e.target.value)}
-                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-0"
               >
                 {Object.entries(models).map(([key, model]) => (
                   <option key={key} value={key}>
@@ -311,7 +319,7 @@ const DualModelInterface = () => {
             </div>
             <button
               onClick={() => clearConversation(side)}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors ml-2"
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors ml-2 flex-shrink-0"
               title="Clear conversation"
             >
               <RotateCcw size={16} />
@@ -404,9 +412,9 @@ const DualModelInterface = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-100 flex">
+    <div className="h-screen bg-gray-100 flex overflow-hidden">
       {/* Left Sidebar - Global Navigation */}
-      <div className="w-64 bg-gray-800 text-white flex flex-col">
+      <div className="w-64 bg-gray-800 text-white flex flex-col flex-shrink-0">
         <div className="p-3 border-b border-gray-700">
           <h2 className="text-lg font-semibold">Navi</h2>
         </div>
@@ -425,16 +433,16 @@ const DualModelInterface = () => {
       </div>
       
       {/* Main Dual-Model Interface */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header for Dual-Model Interface Only */}
-        <div className="bg-white border-b border-gray-200 p-3">
+        <div className="bg-white border-b border-gray-200 p-3 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-bold text-gray-800">Dual-Model Interface</h1>
             
             <div className="flex items-center space-x-4">
               {/* Send Mirrored Inputs Toggle */}
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
                   Send Mirrored Inputs
                 </label>
                 <button
@@ -451,7 +459,7 @@ const DualModelInterface = () => {
                 </button>
               </div>
               
-              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
+              <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0">
                 <div className="w-8 h-8 border border-gray-400 rounded-full flex items-center justify-center">
                   <Menu size={16} />
                 </div>
@@ -461,23 +469,23 @@ const DualModelInterface = () => {
         </div>
         
         {/* Resizable Chat Panes */}
-        <div className="flex-1 flex">
+        <div className="flex-1 flex min-h-0">
           {/* Left Chat Pane */}
-          <div style={{ width: `${leftWidth}%` }}>
+          <div style={{ width: `${leftWidth}%` }} className="min-w-0">
             {renderPane('left')}
           </div>
           
           {/* Resize Handle */}
           <div
             ref={dividerRef}
-            className="w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize flex items-center justify-center group"
+            className="w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize flex items-center justify-center group flex-shrink-0"
             onMouseDown={() => setIsDragging(true)}
           >
             <div className="w-0.5 h-8 bg-gray-400 group-hover:bg-gray-500 rounded-full"></div>
           </div>
           
           {/* Right Chat Pane */}
-          <div style={{ width: `${100 - leftWidth}%` }}>
+          <div style={{ width: `${100 - leftWidth}%` }} className="min-w-0">
             {renderPane('right')}
           </div>
         </div>
@@ -486,12 +494,4 @@ const DualModelInterface = () => {
   );
 };
 
-function App() {
-  return (
-    <div className="App">
-      <DualModelInterface />
-    </div>
-  );
-}
-
-export default App;
+export default DualModelInterface;
